@@ -1,5 +1,5 @@
 # Copyright (C) 2023 The TrebleDroid Project
-#
+# V1.1 (release)
 #
 
 # Add vendor charger init
@@ -7,10 +7,24 @@ import /vendor/etc/init/${ro.bootmode}/init.${ro.bootmode}.rc
 
 service charger /system/bin/charger
     class charger
-    user root
-    group system root shell graphics input wakelock
+    user system
+    group root system shell graphics input wakelock
     capabilities SYS_BOOT
     seclabel u:r:charger:s0
+
+on init
+    chown system system /sys/class/leds/lcd_backlight0/brightness
+    chmod 644 /sys/class/leds/lcd_backlight0/brightness
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/red/delay_off
+    chown system system /sys/class/leds/red/delay_on
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/green/delay_off
+    chown system system /sys/class/leds/green/delay_on
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/blue/delay_off
+    chown system system /sys/class/leds/blue/delay_on
+
 
 on charger && property:ro.hardware=mt*
     write /sys/class/leds/lcd-backlight/trigger "backlight"
