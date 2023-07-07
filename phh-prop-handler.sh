@@ -70,6 +70,21 @@ restartAudio() {
     setprop ctl.restart audio-hal-2-0
 }
 
+if [ "$1" == "persist.sys.phh.asus.dt2w" ]; then
+    if [[ "$prop_value" != "0" && "$prop_value" != "1" ]]; then
+        exit 1
+    fi
+    if [[ "$prop_value" == 1 ]];then
+        setprop persist.asus.dclick 1
+    else
+        setprop persist.asus.dclick 0
+    fi
+fi
+
+if [ "$1" == "persist.sys.phh.asus.usb.port" ]; then
+        setprop persist.vendor.usb.controller.default "$prop_value"
+fi
+
 if [ "$1" == "persist.sys.phh.xiaomi.dt2w" ]; then
     if [[ "$prop_value" != "0" && "$prop_value" != "1" ]]; then
         exit 1
@@ -144,19 +159,9 @@ if [ "$1" == "persist.sys.phh.caf.audio_policy" ];then
         elif [ -f /vendor/etc/audio_policy_configuration_base.xml ];then
             mount /vendor/etc/audio_policy_configuration_base.xml /vendor/etc/audio_policy_configuration.xml
         fi
-
-        if [ -f /vendor/lib/hw/audio.bluetooth_qti.default.so ];then
-            cp /vendor/etc/a2dp_audio_policy_configuration.xml /mnt/phh
-            sed -i 's/bluetooth_qti/a2dp/' /mnt/phh/a2dp_audio_policy_configuration.xml
-            mount /mnt/phh/a2dp_audio_policy_configuration.xml /vendor/etc/a2dp_audio_policy_configuration.xml
-            chcon -h u:object_r:vendor_configs_file:s0 /vendor/etc/a2dp_audio_policy_configuration.xml
-            chmod 644 /vendor/etc/a2dp_audio_policy_configuration.xml
-        fi
     else
         umount /vendor/etc/audio_policy_configuration.xml
         umount /vendor/etc/audio/sku_$sku/audio_policy_configuration.xml
-        umount /vendor/etc/a2dp_audio_policy_configuration.xml
-        rm /mnt/phh/a2dp_audio_policy_configuration.xml
         if [ $(find /vendor/etc/audio -type f |wc -l) -le 3 ];then
             mount /mnt/phh/empty_dir /vendor/etc/audio
         fi
