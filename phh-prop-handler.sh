@@ -79,10 +79,12 @@ if [ "$1" == "persist.sys.phh.asus.dt2w" ]; then
     else
         setprop persist.asus.dclick 0
     fi
+    exit
 fi
 
 if [ "$1" == "persist.sys.phh.asus.usb.port" ]; then
         setprop persist.vendor.usb.controller.default "$prop_value"
+    exit
 fi
 
 if [ "$1" == "persist.sys.phh.xiaomi.dt2w" ]; then
@@ -122,6 +124,19 @@ if [ "$1" == "persist.sys.phh.oppo.usbotg" ]; then
     fi
 
     echo "$prop_value" >/sys/class/power_supply/usb/otg_switch
+    exit
+fi
+
+if [ "$1" == "persist.sys.phh.allow_binder_thread_on_incoming_calls" ]; then
+    if [[ "$prop_value" != "0" && "$prop_value" != "1" ]]; then
+        exit 1
+    fi
+
+    if [[ "$prop_value" == 1 ]];then
+        resetprop_phh ro.telephony.block_binder_thread_on_incoming_calls false
+    else
+        resetprop_phh --delete ro.telephony.block_binder_thread_on_incoming_calls
+    fi
     exit
 fi
 
@@ -217,11 +232,20 @@ if [ "$1" == "persist.sys.phh.disable_soundvolume_effect" ];then
 fi
 
 if [ "$1" == "persist.bluetooth.system_audio_hal.enabled" ]; then
-    if [[ "$prop_value" != "0" && "$prop_value" != "1" ]]; then
+    # Migrate from 0/1 to false/true first
+    if [[ "$prop_value" == "0" ]]; then
+        setprop persist.bluetooth.system_audio_hal.enabled false
+        exit 1
+    elif [[ "$prop_value" == "1" ]]; then
+        setprop persist.bluetooth.system_audio_hal.enabled true
         exit 1
     fi
 
-    if [[ "$prop_value" == 1 ]]; then
+    if [[ "$prop_value" != "false" && "$prop_value" != "true" ]]; then
+        exit 1
+    fi
+
+    if [[ "$prop_value" == "true" ]]; then
         setprop persist.bluetooth.bluetooth_audio_hal.disabled false
         setprop persist.bluetooth.a2dp_offload.disabled true
         resetprop_phh ro.bluetooth.a2dp_offload.supported false

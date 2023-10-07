@@ -160,6 +160,7 @@ changeKeylayout() {
 
     if getprop ro.vendor.build.fingerprint | grep -iq \
         -e poco/ -e POCO/ -e redmi/ -e xiaomi/ ; then
+        setprop persist.sys.phh.evgrab 'uinput-egis;uinput-goodix;uinput-fpc'
         if [ ! -f /mnt/phh/keylayout/uinput-goodix.kl ]; then
           cp /system/phh/empty /mnt/phh/keylayout/uinput-goodix.kl
           chmod 0644 /mnt/phh/keylayout/uinput-goodix.kl
@@ -974,9 +975,8 @@ if getprop ro.vendor.build.fingerprint |grep -qiE -e ASUS_I006D -e ASUS_I003;the
 	setprop persist.sys.phh.fod.asus true
 fi
 
-if getprop ro.vendor.build.fingerprint | grep -qE 'asus/'; then
-    setprop sys.usb.all_controllers "$(ls /sys/class/udc |tr ' ' ',')"
-fi
+# For Asus usb port picker
+setprop sys.usb.all_controllers "$(ls /sys/class/udc |tr ' ' ',')"
 
 if (getprop ro.vendor.build.fingerprint;getprop ro.odm.build.fingerprint) |grep -qiE '^oneplus/' ||
 	getprop ro.build.overlay.deviceid |grep -qiE -e '^RMX' -e '^CPH' ||
@@ -1015,8 +1015,6 @@ fi
 
 if [ "$board" = lahaina ]; then
 	setprop ro.netflix.bsp_rev Q875-32774-1
-	resetprop_phh ro.config.media_vol_steps 25
-	resetprop_phh ro.config.media_vol_default 15
 fi
 
 if [ "$board" = universal8825 ];then
@@ -1138,4 +1136,34 @@ setprop debug.phh.props.omposer-service vendor
 # The support of that command inherits from a "le vendor version". Force this at 0 to disable the use of that command
 if getprop ro.vendor.gnsschip |grep -q marlin3lite;then
     setprop persist.sys.bt.max_vendor_cap 0
+fi
+
+if getprop ro.boot.hardware.sku | grep -q -e fuxi -e nuwa -e ishtar; then
+    setprop ro.surface_flinger.set_idle_timer_ms 1000
+
+    setprop ro.surface_flinger.set_touch_timer_ms 800
+
+    setprop ro.surface_flinger.set_display_power_timer_ms 4000
+
+    setprop debug.sf.frame_rate_multiple_threshold 120
+
+    setprop persist.phh.xiaomi.fod.enrollment.id 4
+fi
+
+if getprop ro.boot.hardware.sku | grep -q -e taoyao -e cupid -e daumier; then
+    setprop ro.surface_flinger.set_idle_timer_ms 1000
+
+    setprop ro.surface_flinger.set_touch_timer_ms 800
+
+    setprop ro.surface_flinger.set_display_power_timer_ms 4000
+
+    setprop debug.sf.frame_rate_multiple_threshold 120
+
+    setprop persist.phh.xiaomi.fod.enrollment.id 10
+fi
+
+# Fixes Vibrator on TECNO POVA 4 Pro
+
+if getprop ro.product.vendor.device | grep -q -e TECNO-LG8n; then
+    chown -R system:system /sys/class/leds/vibrator_single/
 fi
