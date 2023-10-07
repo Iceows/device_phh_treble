@@ -335,8 +335,8 @@ static int out_set_parameters(struct audio_stream* stream,
     }
   }
 
-  if (params.find("routing") != params.end()) {
-    auto routing_param = params.find("routing");
+  if (params.find("AUDIO_PARAMETER_STREAM_ROUTING") != params.end()) {
+    auto routing_param = params.find("AUDIO_PARAMETER_STREAM_ROUTING");
     LOG(INFO) << __func__ << ": state=" << out->bluetooth_output_->GetState()
               << ", stream param '" << routing_param->first.c_str() << "="
               << routing_param->second.c_str() << "'";
@@ -365,8 +365,8 @@ static int out_set_parameters(struct audio_stream* stream,
     }
   }
 
-  if (params.find("closing") != params.end()) {
-    if (params["closing"] == "true") {
+  if (params.find("AUDIO_PARAMETER_KEY_CLOSING") != params.end()) {
+    if (params["AUDIO_PARAMETER_KEY_CLOSING"] == "true") {
       LOG(INFO) << __func__ << ": state=" << out->bluetooth_output_->GetState()
                 << " stream param closing, disallow any writes?";
       if (out->bluetooth_output_->GetState() !=
@@ -378,8 +378,8 @@ static int out_set_parameters(struct audio_stream* stream,
     }
   }
 
-  if (params.find("exiting") != params.end()) {
-    if (params["exiting"] == "1") {
+  if (params.find("AUDIO_PARAMETER_KEY_EXITING") != params.end()) {
+    if (params["AUDIO_PARAMETER_KEY_EXITING"] == "1") {
       LOG(INFO) << __func__ << ": state=" << out->bluetooth_output_->GetState()
                 << " stream param exiting";
       if (out->bluetooth_output_->GetState() !=
@@ -761,6 +761,10 @@ int adev_open_output_stream(struct audio_hw_device* dev,
   // frame is number of samples per channel
 
   size_t preferred_data_interval_us = kBluetoothDefaultOutputBufferMs * 1000;
+
+  // Mixer need 16 multiples
+  preferred_data_interval_us=preferred_data_interval_us*16;
+  
   if (out->bluetooth_output_->GetPreferredDataIntervalUs(
           &preferred_data_interval_us) &&
       preferred_data_interval_us != 0) {
