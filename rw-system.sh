@@ -817,6 +817,7 @@ if getprop ro.boot.boot_devices |grep -v , |grep -qE .;then
     ln -s /dev/block/platform/$(getprop ro.boot.boot_devices) /dev/block/bootdevice
 fi
 
+# Test Huawei device
 if [ -c /dev/dsm ];then
     # /dev/dsm is a magic device on Kirin chipsets that teecd needs to access.
     # Make sure that permissions are right.
@@ -828,21 +829,24 @@ if [ -c /dev/dsm ];then
 
     mkdir -p /data/sec_storage_data
     chown system:system /data/sec_storage_data
-    chcon -R u:object_r:teecd_data_file:s0 /data/sec_storage_data
+    chmod /data/sec_storage_data 0700 
+    chcon -R u:object_r:system_data_file:s0 /data/sec_storage_data
+    
+    mkdir -p /data/sec_storage_data_users
+    chown system:system /data/sec_storage_data_users
+    chmod /data/sec_storage_data_users 0700
+    chcon -R u:object_r:system_data_file:s0 /data/sec_storage_data_users
 
     if mount | grep -q " on /sec_storage " ; then
         # /sec_storage is already mounted by the vendor, don't try to create and mount it
         # ourselves. However, some devices have /sec_storage owned by root, which means that
         # the fingerprint daemon (running as system) cannot access it.
-        chown -R system:system /sec_storage
-        chmod -R 0660 /sec_storage
-        chcon -R u:object_r:teecd_data_file:s0 /sec_storage
     else
-        # No /sec_storage provided by vendor, mount /data/sec_storage_data to it
-        mount /data/sec_storage_data /sec_storage
-        chown system:system /sec_storage
-        chcon u:object_r:teecd_data_file:s0 /sec_storage
+        # No /sec_storage provided by vendor like stock
+        mount -t ext4 -o rw /dev/block/by-name/secure_storage /sec_storage/ 
     fi
+    chown root root /sec_storage
+    chmod 0600 /sec_storage  
 fi
 
 has_hostapd=false
